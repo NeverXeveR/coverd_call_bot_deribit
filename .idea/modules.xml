@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/coverd_call_deribit.iml" filepath="$PROJECT_DIR$/.idea/coverd_call_deribit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/coverd_call_bot_deribit.iml" filepath="$PROJECT_DIR$/.idea/coverd_call_bot_deribit.iml" />
     </modules>
   </component>
 </project>
