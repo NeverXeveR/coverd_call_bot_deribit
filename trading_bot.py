@@ -6,8 +6,8 @@ import json
 import pytz
 import methods
 
-client_id = ""  # replace this with your key
-client_secret = ""  # replace with your secret
+client_id = "NKcyFi8f"  # replace this with your key
+client_secret = "OHvNwOsxmJaEPTxjwMC0uB6c-L1qFFBA_w5elxWhu6I"  # replace with your secret
 live = False  # choice True or False. If True, the bot runs on the deribit api and if False, the bot runs on the
 
 amount = 0.1  # sets the amount of crypto to sell. BTC minimum contract is 0.1 and ETH is 1
@@ -140,20 +140,20 @@ def covered_call(ws):
 
 while True:
     # convert current time to UTC
-    utc = pytz.utc
-    now_utc = datetime.datetime.now(tz=utc)
+    # utc = pytz.utc
+    # now_utc = datetime.datetime.now(tz=utc)
 
-    # Create a datetime object for today at 8:05 UTC
-    next_run = datetime.datetime(now_utc.year, now_utc.month, now_utc.day, 8, 5, 0, 0, tzinfo=pytz.utc)
+    # # Create a datetime object for today at 8:05 UTC
+    # next_run = datetime.datetime(now_utc.year, now_utc.month, now_utc.day, 8, 5, 0, 0, tzinfo=pytz.utc)
 
-    # If the current time is already past 8:05 UTC, set the datetime object for tomorrow at 8:05 UTC
-    if now_utc.time() >= datetime.time(hour=8, minute=5, second=0):
-        next_run += datetime.timedelta(days=1)
+    # # If the current time is already past 8:05 UTC, set the datetime object for tomorrow at 8:05 UTC
+    # if now_utc.time() >= datetime.time(hour=8, minute=5, second=0):
+    #     next_run += datetime.timedelta(days=1)
 
-    time_until_next = (next_run - now_utc).total_seconds()
-    print("The next run will take place in " + str(time_until_next) + " seconds.")
-    # wait for 1 second before checking again
-    time.sleep(time_until_next)
+    # time_until_next = (next_run - now_utc).total_seconds()
+    # print("The next run will take place in " + str(time_until_next) + " seconds.")
+    # # wait for 1 second before checking again
+    # time.sleep(time_until_next)
     ws = methods.DeribitWS(client_id=client_id, client_secret=client_secret, live=live)
     msg = covered_call(ws)
     print(msg)

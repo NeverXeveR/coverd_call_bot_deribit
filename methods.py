@@ -5,15 +5,13 @@ import websockets
 
 
 class DeribitWS:
-
     def __init__(self, client_id, client_secret, live=False):
-
         if not live:
-            self.url = 'wss://test.deribit.com/ws/api/v2'
+            self.url = "wss://test.deribit.com/ws/api/v2"
         elif live:
-            self.url = 'wss://www.deribit.com/ws/api/v2'
+            self.url = "wss://www.deribit.com/ws/api/v2"
         else:
-            raise Exception('live must be a bool, True=real, False=paper')
+            raise Exception("live must be a bool, True=real, False=paper")
 
         self.client_id = client_id
         self.client_secret = client_secret
@@ -25,8 +23,8 @@ class DeribitWS:
             "params": {
                 "grant_type": "client_credentials",
                 "client_id": self.client_id,
-                "client_secret": self.client_secret
-            }
+                "client_secret": self.client_secret,
+            },
         }
         self.test_creds()
 
@@ -59,20 +57,21 @@ class DeribitWS:
 
     def test_creds(self):
         response = self.async_loop(self.pub_api, json.dumps(self.auth_creds))
-        if 'error' in response.keys():
+        if "error" in response.keys():
             raise Exception(f"Auth failed with error {response['error']}")
         else:
             print("Auth creds are good, it worked")
+        return response
 
     def sell(self, instrument, amount, type, label, price=0.00):
-        if type == 'market':
+        if type == "market":
             params = {
                 "instrument_name": instrument,
                 "amount": amount,
                 "type": type,
                 "label": label,
             }
-        elif type == 'limit':
+        elif type == "limit":
             params = {
                 "instrument_name": instrument,
                 "amount": amount,
@@ -85,14 +84,136 @@ class DeribitWS:
         resp = self.async_loop(self.priv_api, json.dumps(self.msg))
         return resp
 
-    def get_time(self):
+    def buy(self, instrument, amount, type, label, price=0.00):
+        if type == "market":
+            params = {
+                "instrument_name": instrument,
+                "amount": amount,
+                "type": type,
+                "label": label,
+            }
+        elif type == "limit":
+            params = {
+                "instrument_name": instrument,
+                "amount": amount,
+                "type": type,
+                "label": label,
+                "price": price,
+            }
+        self.msg["method"] = "private/buy"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def get_open_orders_by_instrument(self, instrument, type):
         params = {
+            "instrument_name": instrument,
+            "type": type,
         }
+        self.msg["method"] = "private/get_open_orders_by_instrument"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def get_open_orders_by_label(self, currency, label):
+        params = {
+            "currency": currency,
+            "label": label,
+        }
+        self.msg["method"] = "private/get_open_orders_by_label"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def get_open_orders_by_currency(self, currency):
+        params = {
+            "currency": currency,
+        }
+        self.msg["method"] = "private/get_open_orders_by_currency"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def edit(self, order_id, amount=None, price=None):
+        params = {
+            "order_id": order_id,
+            "amount": amount,
+            "price": price,
+        }
+        self.msg["method"] = "private/edit"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def edit_by_label(self, instrument_name, label=None, amount=None, price=None):
+        params = {
+            "instrument_name": instrument_name,
+            "label": label,
+            "amount": amount,
+            "price": price,
+        }
+        self.msg["method"] = "private/edit_by_label"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def cancel_by_label(self, label):
+        params = {
+            "label": label,
+        }
+        self.msg["method"] = "private/cancel_by_label"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def cancel_all(self):
+        params = {}
+        self.msg["method"] = "private/cancel_all"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def get_order_state(self, ORDER_ID):
+        params = {
+            "order_id": ORDER_ID,
+        }
+        self.msg["method"] = "private/get_order_state"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp
+
+    def get_index_price(self, index_name):
+        params = {
+            "index_name": index_name,
+        }
+        self.msg["method"] = "public/get_index_price"
+        self.msg["params"] = params
+        resp = self.async_loop(self.pub_api, json.dumps(self.msg))
+
+        return resp
+
+    def get_time(self):
+        params = {}
         self.msg["method"] = "public/get_time"
         self.msg["params"] = params
-        get_time = self.async_loop(self.pub_api, json.dumps(self.msg))
+        resp = self.async_loop(self.pub_api, json.dumps(self.msg))
 
-        return get_time
+        return resp
+
+    def get_volatility_index_data(
+        self, currency, start_timestamp, end_timestamp, resolution
+    ):
+        params = {
+            "currency": currency,
+            "start_timestamp": start_timestamp,
+            "end_timestamp": end_timestamp,
+            "resolution": resolution,
+        }
+        self.msg["method"] = "public/get_volatility_index_data"
+        self.msg["params"] = params
+        resp = self.async_loop(self.pub_api, json.dumps(self.msg))
+
+        return resp
 
     def get_index(self, currency):
         params = {
@@ -117,7 +238,7 @@ class DeribitWS:
             "currency": currency,
             "start_timestamp": start_timestamp,
             "end_timestamp": end_timestamp,
-            "count": count
+            "count": count,
         }
         self.msg["method"] = "private/get_transaction_log"
         self.msg["params"] = params
@@ -137,15 +258,57 @@ class DeribitWS:
     def available_instruments(self, currency, kind, expired=False):
         # function that returns the available instruments names in the format of
         # "CURRENCY-EXPIRING_DATE-STRIKE_PRICE-KIND"
-        params = {
-            "currency": currency,
-            "kind": kind,
-            "expired": expired
-        }
+        params = {"currency": currency, "kind": kind, "expired": expired}
 
         self.msg["method"] = "public/get_instruments"
         self.msg["params"] = params
         resp = self.async_loop(self.pub_api, json.dumps(self.msg))
-        instruments = [d["instrument_name"] for d in resp['result']]
+        instruments = [d["instrument_name"] for d in resp["result"]]
 
         return instruments
+
+    def get_position(self, instrument_name):
+        """ "
+        msg =
+            {
+            "jsonrpc" : "2.0",
+            "id" : 404,
+            "method" : "private/get_position",
+            "params" : {
+                "instrument_name" : "BTC-PERPETUAL"
+            }
+            }
+
+            {
+            "jsonrpc": "2.0",
+            "id": 404,
+            "result": {
+                "average_price": 0,
+                "delta": 0,
+                "direction": "buy",
+                "estimated_liquidation_price": 0,
+                "floating_profit_loss": 0,
+                "index_price": 3555.86,
+                "initial_margin": 0,
+                "instrument_name": "BTC-PERPETUAL",
+                "interest_value" : 1.7362511643080387,
+                "leverage": 100,
+                "kind": "future",
+                "maintenance_margin": 0,
+                "mark_price": 3556.62,
+                "open_orders_margin": 0.000165889,
+                "realized_profit_loss": 0,
+                "settlement_price": 3555.44,
+                "size": 0,
+                "size_currency": 0,
+                "total_profit_loss": 0
+            }
+            }
+        """
+        params = {
+            "instrument_name": instrument_name,
+        }
+        self.msg["method"] = "private/get_position"
+        self.msg["params"] = params
+        resp = self.async_loop(self.priv_api, json.dumps(self.msg))
+        return resp["result"]
